@@ -131,3 +131,65 @@ aws deploy create-deployment \
   --s3-location bucket=dchun-codedeploy,bundleType=zip,key=test-website.zip \
   --profile dchun
 ```
+
+## Verification
+
+Get the deployment's ID:
+
+```bash
+aws deploy list-deployments \
+  --application-name test-website \
+  --deployment-group-name test-website-deploy-group \
+  --query 'deployments' \
+  --output text \
+  --profile dchun
+```
+
+Get the deployment's overall status:
+
+```bash
+aws deploy get-deployment \
+  --deployment-id d-R8CPFJYXG \
+  --query 'deploymentInfo.status' \
+  --output text \
+  --profile dchun
+```
+
+## Re-deploy
+
+Note that this time we bundle everything into a different zip file named `test-website-v2.zip`.
+
+```bash
+aws deploy push \
+  --application-name=test-website \
+  --s3-location=s3://dchun-codedeploy/test-website-v2.zip \
+  --ignore-hidden-files \
+  --profile=dchun
+```
+
+```bash
+aws deploy create-deployment \
+  --application-name test-website \
+  --deployment-config-name CodeDeployDefault.OneAtATime \
+  --deployment-group-name test-website-deploy-group \
+  --s3-location bucket=dchun-codedeploy,bundleType=zip,key=test-website-v2.zip \
+  --profile dchun
+```
+
+## Clean Up
+
+Delete the S3 bucket:
+
+```bash
+aws s3 rm s3://dchun-codedeploy --recursive --profile dchun
+```
+
+Delete the CodeDeploy setup:
+
+```bash
+aws deploy delete-application \
+  --application-name test-website \
+  --profile dchun
+```
+
+Terminate any EC2 instances manually created.
