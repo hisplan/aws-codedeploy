@@ -1,0 +1,18 @@
+version: 0.0
+os: linux
+files:
+  - source: index.html
+    destination: /var/www/html
+hooks:
+  BeforeInstall:
+    - location: scripts/before-install.sh
+  AfterInstall:
+    - location: scripts/after-install.sh
+      timeout: 180
+  ApplicationStart:
+    - location: scripts/start.sh
+      timeout: 3600
+      runas: root
+  ValidateService:
+    - location: scripts/validate.sh
+      timeout: 3600
