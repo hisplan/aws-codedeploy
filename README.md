@@ -2,7 +2,7 @@
 
 ## Service Role
 
-service roles are used to grant permissions to an AWS service so it can access AWS resources. The policies that you attach to the service role determine which AWS resources the service can access and what it can do with those resources.
+Service roles are used to grant permissions to an AWS service so it can access AWS resources. The policies that you attach to the service role determine which AWS resources the service can access and what it can do with those resources.
 
 The service role you create for AWS CodeDeploy must be granted the permissions to access the instances to which you will deploy applications. 
 
@@ -56,7 +56,9 @@ aws iam get-role \
 
 ## EC2 Instance
 
-Launch an EC2 instance with the IAM role that has S3 Full Access.
+Launch an EC2 instance with the IAM role that has S3 Full Access. This EC2 instance will be running Apache HTTP Server to serve a test webpage.
+
+Enter this bash script into `User Data` section.
 
 ```bash
 #!/bin/bash
@@ -71,21 +73,11 @@ chmod +x ./install
 ./install auto
 ```
 
+Note that we are using `aws-codedeploy-us-east-1` for instances in the US East (N. Virginia) region.
+
 ## S3
 
-`bucket-name` represents one of the following:
-
-- `aws-codedeploy-us-east-1` for instances in the US East (N. Virginia) region
-- `aws-codedeploy-us-west-1` for instances in the US West (N. California) region
-- `aws-codedeploy-us-west-2` for instances in the US West (Oregon) region
-- `aws-codedeploy-ap-south-1` for instances in the Asia Pacific (Mumbai) region
-- `aws-codedeploy-ap-northeast-2` for instances in the Asia Pacific (Seoul) region
-- `aws-codedeploy-ap-southeast-1` for instances in the Asia Pacific (Singapore) region
-- `aws-codedeploy-ap-southeast-2` for instances in the Asia Pacific (Sydney) region
-- `aws-codedeploy-ap-northeast-1` for instances in the Asia Pacific (Tokyo) region
-- `aws-codedeploy-eu-central-1` for instances in the EU (Frankfurt) region
-- `aws-codedeploy-eu-west-1` for instances in the EU (Ireland) region
-- `aws-codedeploy-sa-east-1` for instances in the South America (São Paulo) region
+Create a S3 bucket from which AWS CodeDeploy can deploy your application.
 
 ```bash
 aws s3 mb s3://dchun-codedeploy --profile=dchun
@@ -111,7 +103,7 @@ aws deploy push \
   --profile=dchun
 ```
 
-
+Create a deployment group:
 
 ```bash
 aws deploy create-deployment-group \
@@ -122,6 +114,8 @@ aws deploy create-deployment-group \
   --service-role-arn=arn:aws:iam::713746723246:role/CodeDeployServiceRole \
   --profile=dchun
 ```
+
+Finally, `create-deployment` command to deploy the application to the designated EC2 instance(s):
 
 ```bash
 aws deploy create-deployment \
