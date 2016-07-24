@@ -157,6 +157,8 @@ aws deploy get-deployment \
 
 ## Re-deploy
 
+Make some changes in the `index.html` file.
+
 Note that this time we bundle everything into a different zip file named `test-website-v2.zip`.
 
 ```bash
