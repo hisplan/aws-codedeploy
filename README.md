@@ -10,15 +10,15 @@ When launching an EC2 instance, enter the following bash script into `User Data`
 
 ```bash
 #!/bin/bash
-yum -y update
-yum install -y ruby aws-cli
-yum install -y httpd
-chkconfig httpd on
-service httpd start
+sudo yum -y update
+sudo yum install -y ruby aws-cli
+sudo yum install -y httpd
+sudo chkconfig httpd on
+sudo service httpd start
 cd /home/ec2-user
 aws s3 cp s3://aws-codedeploy-us-east-1/latest/install . --region us-east-1
-chmod +x ./install
-./install auto
+sudo chmod +x ./install
+sudo ./install auto
 ```
 
 Note that we are using `aws-codedeploy-us-east-1` for instances in the US East (N. Virginia) region.
