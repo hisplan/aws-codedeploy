@@ -1,6 +1,33 @@
 # AWS Code Deploy
 
-## Service Role
+## EC2 Instance
+
+Launch an EC2 instance with the IAM role that has S3 Full Access.
+
+This EC2 instance will be running Apache HTTP Server to serve a test webpage. And we are going to deploy a webpage to this instance using AWS CodeDeploy.
+
+When launching an EC2 instance, enter the following bash script into `User Data` section:
+
+```bash
+#!/bin/bash
+yum -y update
+yum install -y ruby aws-cli
+yum install -y httpd
+chkconfig httpd on
+service httpd start
+cd /home/ec2-user
+aws s3 cp s3://aws-codedeploy-us-east-1/latest/install . --region us-east-1
+chmod +x ./install
+./install auto
+```
+
+Note that we are using `aws-codedeploy-us-east-1` for instances in the US East (N. Virginia) region.
+
+Also, tag the instance with `Name=test-website`. This tag will be later used to tell AWS CodeDeploy to which instance(s) the application should be deployed.
+
+## Preparation
+
+### Service Role
 
 Service roles are used to grant permissions to an AWS service so it can access AWS resources. The policies that you attach to the service role determine which AWS resources the service can access and what it can do with those resources.
 
@@ -54,28 +81,7 @@ aws iam get-role \
   --profile=dchun
 ```
 
-## EC2 Instance
-
-Launch an EC2 instance with the IAM role that has S3 Full Access. This EC2 instance will be running Apache HTTP Server to serve a test webpage.
-
-Enter this bash script into `User Data` section.
-
-```bash
-#!/bin/bash
-yum -y update
-yum install -y ruby aws-cli
-yum install -y httpd
-chkconfig httpd on
-service httpd start
-cd /home/ec2-user
-aws s3 cp s3://aws-codedeploy-us-east-1/latest/install . --region us-east-1
-chmod +x ./install
-./install auto
-```
-
-Note that we are using `aws-codedeploy-us-east-1` for instances in the US East (N. Virginia) region.
-
-## S3
+### S3
 
 Create a S3 bucket from which AWS CodeDeploy can deploy your application.
 
@@ -83,23 +89,13 @@ Create a S3 bucket from which AWS CodeDeploy can deploy your application.
 aws s3 mb s3://dchun-codedeploy --profile=dchun
 ```
 
-## Prep
+### CodeDeploy
 
 `create-application` command to register a new application
 
 ```bash
 aws deploy create-application \
   --application-name=test-website \
-  --profile=dchun
-```
-
-`push` command to bundle the files together, upload the revisions to Amazon S3, and register information with AWS CodeDeploy about the uploaded revision, all in one action.
-
-```bash
-aws deploy push \
-  --application-name=test-website \
-  --s3-location=s3://dchun-codedeploy/test-website.zip \
-  --ignore-hidden-files \
   --profile=dchun
 ```
 
@@ -112,6 +108,16 @@ aws deploy create-deployment-group \
   --deployment-config-name=CodeDeployDefault.OneAtATime \
   --ec2-tag-filters Key=Name,Value=test-website,Type=KEY_AND_VALUE \
   --service-role-arn=arn:aws:iam::713746723246:role/CodeDeployServiceRole \
+  --profile=dchun
+```
+
+`push` command to bundle the files together, upload the revisions to Amazon S3, and register information with AWS CodeDeploy about the uploaded revision, all in one action.
+
+```bash
+aws deploy push \
+  --application-name=test-website \
+  --s3-location=s3://dchun-codedeploy/test-website.zip \
+  --ignore-hidden-files \
   --profile=dchun
 ```
 
@@ -143,7 +149,7 @@ Get the deployment's overall status:
 
 ```bash
 aws deploy get-deployment \
-  --deployment-id d-R8CPFJYXG \
+  --deployment-id d-RX4CG0ZXG \
   --query 'deploymentInfo.status' \
   --output text \
   --profile dchun
